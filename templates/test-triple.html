@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testy Prawo Jazdy</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+    <div class="container">
+        <p id="question-desc"></p>
+        <div id="button-a"></div>
+        <div class="button-row">
+            <button id="A"></button>
+            <button id="B"></button>
+            <button id="C"></button>
+        </div>
+    </div>
+
+    <script>
+        let correct_answer = "";
+        const API_URL = "http://localhost:8000";    
+
+        async function makeRequest(method, endpoint, body = null) {
+            const options = {
+                method: method,
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            };
+            if (body) options.body = JSON.stringify(body);
+            
+            const response = await fetch(API_URL + endpoint, options);
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(`${response.status}: ${data.detail || response.statusText}`);
+            }
+            return data;
+        }
+
+        async function getNextQuestion() {
+            try {
+                const data = await makeRequest("GET", "/next_question");
+                
+                writeDescription(data.description);
+                writeAnswers("A", data.answers[0]);
+                writeAnswers("B", data.answers[1]);
+                writeAnswers("C", data.answers[2]);
+                
+                correct_answer = data.correct_answer;
+                return;
+            } catch (e) {
+                console.error("Failed to load next question:", e);
+            }
+        }
+
+        function writeDescription(desc) {
+            document.getElementById("question-desc").textContent = desc;
+        }
+
+        function writeAnswers(button, answer) {
+            document.getElementById(button).textContent = `${button}: ${answer}`;
+        }
+
+        getNextQuestion();
+    </script>
+</body>
+</html>
