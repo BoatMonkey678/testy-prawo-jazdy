@@ -1,6 +1,5 @@
 import uvicorn
 from fastapi import FastAPI, Request
-from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -19,7 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+# Serving HTMLs
 @app.get("/", response_class=HTMLResponse)
 async def read_index(request: Request):
     return templates.TemplateResponse(request=request, name="index.html")
@@ -28,40 +27,34 @@ async def read_index(request: Request):
 async def read_about(request: Request):
     return templates.TemplateResponse(request=request, name="about.html")
 
-@app.get("/test-triple", response_class=HTMLResponse)
+@app.get("/question", response_class=HTMLResponse)
 async def read_test_triple(request: Request):
-    return templates.TemplateResponse(request=request, name="test-triple.html")
+    return templates.TemplateResponse(request=request, name="question.html")
 
 
 class Question(BaseModel):
     description: str
-    answers: list[str]
-    correct_answer: int
+    answers: dict[str, str]
+    correct_answer: str
     media: str | None = None
+    points: int
 
-items = {   
-    "foo": {"name": "Foo", "price": 50.2},
-    "bar": {"name": "Bar", "description": "The bartenders", "price": 62, "tax": 20.2},
-    "baz": {"name": "Baz", "description": None, "price": 50.2, "tax": 10.5, "tags": []},
-}
-
-
-@app.get("/items/{item_id}", response_model=Question)
-async def read_item(item_id: str):
-    return items[item_id]
+points_num: int = 0
+next_question: Question
 
 # Sample: generates some question.
-@app.get("/next_question", response_model=Question)
-async def get_next_question():
-    return Question(description="Which answer is the most fucked up???", answers=["Walić Konia", "Konić Wala", "8====D"], media=None, correct_answer=0)
+@app.get("/question/get", response_model=Question)
+async def get_question():
+    global next_question
+    next_q = Question(description="Sample Question", answers={"A": "Answer A", "B": "Answer B", "C": "Answer C"}, media=None, correct_answer="C", points=3)
+    next_question = next_q
+    return next_q
 
-
-@app.put("/items/{item_id}", response_model=Question)
-async def update_item(item_id: str, item: Question):
-    update_item_encoded = jsonable_encoder(item)
-    items[item_id] = update_item_encoded
-    return update_item_encoded
-
+@app.post("/question/grant_points")
+async def update_points():
+    global points_num
+    points_num += next_question.points
+    return {"points": points_num}
 
 if __name__ == "__main__":
     uvicorn.run(

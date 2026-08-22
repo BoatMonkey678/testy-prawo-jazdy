@@ -10,16 +10,40 @@
     <div class="container">
         <p id="question-desc"></p>
         <div id="button-a"></div>
-        <div class="button-row">
-            <button id="A"></button>
-            <button id="B"></button>
-            <button id="C"></button>
+        <div id="b-row" class="button-row">
         </div>
+        <button id="submit">Kontynuuj</button>
     </div>
 
     <script>
         let correct_answer = "";
+        let selected_answer = "";
         const API_URL = "http://localhost:8000";    
+        const answerRow = document.getElementById("b-row");
+
+        answerRow.addEventListener("click", (event) => {
+            const clickedButton = event.target.closest(".answer-button");
+            if (!clickedButton) return;
+
+            answerRow.querySelectorAll(".answer-button").forEach((button) => {
+                button.classList.remove("selected");
+            });
+            clickedButton.classList.add("selected");
+            selected_answer = clickedButton.dataset.answer;
+        });
+
+        document.getElementById("submit").addEventListener("click", async () => {
+            if (selected_answer === correct_answer) {
+                try {
+                    await makeRequest("POST", "/question/grant_points");
+                } catch (e) {
+                    console.error("Failed to grant points:", e);
+                    return;
+                }
+            }
+
+            window.location.href = '/';
+        });
 
         async function makeRequest(method, endpoint, body = null) {
             const options = {
@@ -40,12 +64,14 @@
 
         async function getNextQuestion() {
             try {
-                const data = await makeRequest("GET", "/next_question");
+                const data = await makeRequest("GET", "/question/get");
                 
                 writeDescription(data.description);
-                writeAnswers("A", data.answers[0]);
-                writeAnswers("B", data.answers[1]);
-                writeAnswers("C", data.answers[2]);
+                answerRow.innerHTML = "";
+                selected_answer = "";
+                Object.entries(data.answers).forEach(([key, value]) => {
+                    writeAnswers(key, value);
+                })
                 
                 correct_answer = data.correct_answer;
                 return;
@@ -59,7 +85,7 @@
         }
 
         function writeAnswers(button, answer) {
-            document.getElementById(button).textContent = `${button}: ${answer}`;
+            answerRow.innerHTML += `<button class="answer-button" data-answer="${button}">${button}: ${answer}</button>`;
         }
 
         getNextQuestion();

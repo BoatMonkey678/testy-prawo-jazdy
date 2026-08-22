@@ -36,6 +36,13 @@ button {
 button:hover {
     background-color: #0056b3;
 }
+.answer-button.selected {
+    background-color: #28a745;
+}
+
+.answer-button.selected:hover {
+    background-color: #218838;
+}
 .result {
     background-color: #f9f9f9;
     padding: 10px;

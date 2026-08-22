@@ -11,91 +11,12 @@
         <h1>Egzaminy Prawo Jazdy</h1>
         
         <div class="section">
-            <button onclick="window.location.href='/test-triple'">Rozpocznij</button>
+            <button onclick="window.location.href='/question'">Rozpocznij</button>
         </div>
 
         <div class="section">
             <button onclick="window.location.href='/about'">O Programie</button>
         </div>
     </div>
-
-    <script>
-        const API_URL = "http://localhost:8000";    
-
-        async function makeRequest(method, endpoint, body = null) {
-            const options = {
-                method: method,
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            };
-            if (body) options.body = JSON.stringify(body);
-            
-            const response = await fetch(API_URL + endpoint, options);
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(`${response.status}: ${data.detail || response.statusText}`);
-            }
-            return data;
-        }
-
-        async function getItemCount() {
-            try {
-                const data = await makeRequest("GET", "/no_items");
-                showResult("countResult", data);
-            } catch (e) {
-                showError("countResult", e.message);
-            }
-        }
-
-        async function getItem() {
-            const itemId = document.getElementById("itemId").value;
-            if (!itemId) {
-                showError("itemResult", "Please enter an item ID");
-                return;
-            }
-            try {
-                const data = await makeRequest("GET", `/items/${itemId}`);
-                showResult("itemResult", data);
-            } catch (e) {
-                showError("itemResult", e.message);
-            }
-        }
-
-        async function updateItem() {
-            const itemId = document.getElementById("updateItemId").value;
-            if (!itemId) {
-                showError("updateResult", "Please enter an item ID");
-                return;
-            }
-            const body = {
-                name: document.getElementById("itemName").value || null,
-                description: document.getElementById("itemDescription").value || null,
-                price: document.getElementById("itemPrice").value ? parseFloat(document.getElementById("itemPrice").value) : null,
-                tax: 10.5,
-                tags: []
-            };
-            try {
-                const data = await makeRequest("PUT", `/items/${itemId}`, body);
-                showResult("updateResult", data);
-            } catch (e) {
-                showError("updateResult", e.message);
-            }
-        }
-
-        function showResult(elementId, data) {
-            const element = document.getElementById(elementId);
-            element.textContent = JSON.stringify(data, null, 2);
-            element.classList.remove("error");
-            element.style.display = "block";
-        }
-
-        function showError(elementId, message) {
-            const element = document.getElementById(elementId);
-            element.textContent = "Error: " + message;
-            element.classList.add("error");
-            element.style.display = "block";
-        }
-    </script>
 </body>
 </html>
