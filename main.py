@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
+
+from html_objects import *
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -18,47 +19,41 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+answered_questions: dict[int, str] = {}
+
 # Serving HTMLs
 @app.get("/", response_class=HTMLResponse)
-async def read_index(request: Request):
+async def serve_index(request: Request):
     return templates.TemplateResponse(request=request, name="index.html")
 
 @app.get("/about", response_class=HTMLResponse)
-async def read_about(request: Request):
+async def serve_about(request: Request):
     return templates.TemplateResponse(request=request, name="about.html")
 
 @app.get("/question", response_class=HTMLResponse)
-async def read_test_triple(request: Request):
+async def serve_question(request: Request):
     return templates.TemplateResponse(request=request, name="question.html")
 
+@app.post("/reset")
+async def reset_answers():
+    global answered_questions
+    answered_questions = {}
+    return {"answered_questions": "reset"}
 
-class Question(BaseModel):
-    description: str
-    answers: dict[str, str]
-    correct_answer: str
-    media: str | None = None
-    points: int
-
-points_num: int = 0
-next_question: Question
 
 # Sample: generates some question.
 @app.get("/question/get", response_model=Question)
 async def get_question():
-    global next_question
-    next_q = Question(description="Sample Question", answers={"A": "Answer A", "B": "Answer B", "C": "Answer C"}, media=None, correct_answer="C", points=3)
-    next_question = next_q
-    return next_q
+    return Question(id=100, description="Sample Question", answers={"A": "Answer A", "B": "Answer B", "C": "Answer C"}, media=None, correct_answer="C")
 
-@app.post("/question/grant_points")
-async def update_points():
-    global points_num
-    points_num += next_question.points
-    return {"points": points_num}
+@app.post("/question/submit-answer")
+async def submit_answer(result: QuestionResult):
+    answered_questions[result.id] = result.answer
+    return {"passed": answered_questions}
 
 if __name__ == "__main__":
     uvicorn.run(
         app,
         host="127.0.0.1",
-        port=7878,
+        port=8000,
     )

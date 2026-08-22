@@ -16,8 +16,8 @@
     </div>
 
     <script>
-        let correct_answer = "";
         let selected_answer = "";
+        let question_id = 0;
         const API_URL = "http://localhost:8000";    
         const answerRow = document.getElementById("b-row");
 
@@ -33,16 +33,14 @@
         });
 
         document.getElementById("submit").addEventListener("click", async () => {
-            if (selected_answer === correct_answer) {
-                try {
-                    await makeRequest("POST", "/question/grant_points");
-                } catch (e) {
-                    console.error("Failed to grant points:", e);
-                    return;
-                }
+            try {
+                await makeRequest("POST", "/question/submit-answer", { id: question_id, answer: selected_answer });
+            } catch (e) {
+                console.error("Failed to submit answer", e);
+                return;
             }
-
-            window.location.href = '/';
+            
+            window.location.href = '/question';
         });
 
         async function makeRequest(method, endpoint, body = null) {
@@ -69,11 +67,12 @@
                 writeDescription(data.description);
                 answerRow.innerHTML = "";
                 selected_answer = "";
+
                 Object.entries(data.answers).forEach(([key, value]) => {
                     writeAnswers(key, value);
                 })
                 
-                correct_answer = data.correct_answer;
+                question_id = data.id;
                 return;
             } catch (e) {
                 console.error("Failed to load next question:", e);
