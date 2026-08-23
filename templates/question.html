@@ -8,6 +8,7 @@
 </head>
 <body>
     <div class="container">
+        <div id="media"></div>
         <p id="question-desc"></p>
         <div id="button-a"></div>
         <div id="b-row" class="button-row">
@@ -18,7 +19,7 @@
     <script>
         let selected_answer = "";
         let question_id = 0;
-        const API_URL = "http://localhost:8000";    
+        const API_URL = "{{ api_url }}";    
         const answerRow = document.getElementById("b-row");
 
         answerRow.addEventListener("click", (event) => {
@@ -65,6 +66,7 @@
                 const data = await makeRequest("GET", "/question/get");
                 
                 writeDescription(data.description);
+                setMedia(data.media);
                 answerRow.innerHTML = "";
                 selected_answer = "";
 
@@ -81,6 +83,20 @@
 
         function writeDescription(desc) {
             document.getElementById("question-desc").textContent = desc;
+        }
+
+        function setMedia(media) {
+            if (media.endsWith(".mp4"))
+            {
+                document.getElementById("media").innerHTML = `
+                <video width="320" height="240" controls>
+                    <source src="/resources/${media}"" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>`;
+            }   
+            else {
+                document.getElementById("media").innerHTML = `<img src=../resources/${media}>`;
+            }
         }
 
         function writeAnswers(button, answer) {
