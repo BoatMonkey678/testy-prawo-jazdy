@@ -138,9 +138,9 @@ def convert_wmv_directory(directory, workers=4):
     total = len(wmv_files)
 
     if not wmv_files:
-        sys.stdout.write("No WMV files found.\n")
-        sys.stdout.flush()
         return
+
+    print("Converting .wmv to .mp4 - this will take a while")
 
     completed = 0
 

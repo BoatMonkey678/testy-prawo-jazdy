@@ -12,6 +12,7 @@ from html_objects import *
 from question_bank import *
 from resourse_manager import *
 
+IS_FROZEN = getattr(sys, "frozen", False)
 config = configparser.ConfigParser()
 config.read("config.ini")
 server_host = config["server"]["host"]
@@ -31,7 +32,12 @@ if not os.path.exists("./resources/media"):
 
 convert_wmv_directory("./resources/media", converting_threads)
 
-app = FastAPI()
+app = FastAPI(
+    docs_url=None if IS_FROZEN else "/docs",
+    redoc_url=None if IS_FROZEN else "/redoc",
+    openapi_url=None if IS_FROZEN else "/openapi.json",
+)
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/resources", StaticFiles(directory="resources"), name="resources")
 templates = Jinja2Templates(directory="templates")

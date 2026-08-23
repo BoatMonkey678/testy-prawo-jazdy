@@ -92,21 +92,27 @@
 
         function setMedia(media) {
             const mediaElement = document.getElementById("media");
-            if (!media) {
-                mediaElement.innerHTML = "";
+            const mediaName = typeof media === "string" ? media.trim() : "";
+            const mediaPath = encodeURIComponent(mediaName);
+
+            if (!mediaName) {
+                mediaElement.innerHTML = `<img width="480" height="270" src=../static/no-media.jpg>`;
                 return;
             }
 
-            if (media.endsWith(".wmv"))
+            if (mediaName.toLowerCase().endsWith(".wmv"))
             {
                 mediaElement.innerHTML = `
-                <video width="640" height="360" controls>
-                    <source src="/resources/media/${media.replace(".wmv", ".mp4")}" type="video/mp4">
+                <video width="480" height="270" controls>
+                    <source src="/resources/media/${mediaPath.replace(/\.wmv$/i, ".mp4")}" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>`;
             }   
+            else if (/\.(jpg|jpeg|png|gif|webp)$/i.test(mediaName)) {
+                mediaElement.innerHTML = `<img width="480" height="270" src="../resources/media/${mediaPath}">`;
+            }
             else {
-                mediaElement.innerHTML = `<img width="640" height="360" src=../resources/media/${media}>`;
+                mediaElement.innerHTML = `<img width="480" height="270" src="../static/no-media.jpeg">`;
             }
         }
 
