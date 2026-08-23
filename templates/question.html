@@ -64,6 +64,11 @@
         async function getNextQuestion() {
             try {
                 const data = await makeRequest("GET", "/question/get");
+
+                if (data === null) {
+                    window.location.href = "/";
+                    return;
+                }
                 
                 writeDescription(data.description);
                 setMedia(data.media);
@@ -86,16 +91,22 @@
         }
 
         function setMedia(media) {
-            if (media.endsWith(".mp4"))
+            const mediaElement = document.getElementById("media");
+            if (!media) {
+                mediaElement.innerHTML = "";
+                return;
+            }
+
+            if (media.endsWith(".wmv"))
             {
-                document.getElementById("media").innerHTML = `
-                <video width="320" height="240" controls>
-                    <source src="/resources/${media}"" type="video/mp4">
+                mediaElement.innerHTML = `
+                <video width="640" height="360" controls>
+                    <source src="/resources/media/${media.replace(".wmv", ".mp4")}" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>`;
             }   
             else {
-                document.getElementById("media").innerHTML = `<img src=../resources/${media}>`;
+                mediaElement.innerHTML = `<img width="640" height="360" src=../resources/media/${media}>`;
             }
         }
 

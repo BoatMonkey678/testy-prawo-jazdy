@@ -11,7 +11,7 @@
         <h1>Egzaminy Prawo Jazdy</h1>
         
         <div class="section">
-            <button onclick="window.location.href='/question'">Rozpocznij</button>
+            <button id="start-test">Rozpocznij</button>
         </div>
 
         <div class="section">
@@ -39,7 +39,14 @@
             return data;
         }
 
-        makeRequest("POST", "/reset");
+        document.getElementById("start-test").addEventListener("click", async () => {
+            try {
+                await makeRequest("POST", "/reset");
+                window.location.href = "/question";
+            } catch (e) {
+                console.error("Failed to start test", e);
+            }
+        });
     </script>
 </body>
 </html>
