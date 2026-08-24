@@ -74,7 +74,6 @@ async def serve_results(request: Request):
     return templates.TemplateResponse(request=request, name="results.html", context={"api_url": api_url})
 
 @app.get("/results/details", response_class=HTMLResponse)
-@app.get("/results/detail", response_class=HTMLResponse)
 async def serve_results_details(request: Request):
     return templates.TemplateResponse(request=request, name="results-detail.html", context={"api_url": api_url})
 
