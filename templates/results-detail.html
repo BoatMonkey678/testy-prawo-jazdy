@@ -20,32 +20,16 @@
         </div>
     </div>
 
+    <script>window.APP_CONFIG = { apiUrl: "{{ api_url }}" };</script>
+    <script src="../static/app.js"></script>
     <script>
-        const API_URL = "{{ api_url }}";
         const answerRow = document.getElementById("b-row");
-
-        async function makeRequest(method, endpoint, body = null) {
-            const options = {
-                method: method,
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            };
-            if (body) options.body = JSON.stringify(body);
-            
-            const response = await fetch(API_URL + endpoint, options);
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(`${response.status}: ${data.detail || response.statusText}`);
-            }
-            return data;
-        }
 
         async function setValues() {
             const data = JSON.parse(sessionStorage.getItem("result-question"));
 
             writeDescription(data.description);
-            setMedia(data.media);
+            App.setMedia(data.media);
 
             if (data.special) {
                 document.getElementById("generic-desc").textContent = `Zakres: Specjalistyczny, Punkty: ${data.points}`
@@ -55,18 +39,12 @@
             }
 
             Object.entries(data.answers).forEach(([key, value]) => {
-                if (data.selected_answer != data.correct_answer && data.selected_answer === key) {
-                    writeAnswers(key, value, "wrong-answer");
-                }
-                else if (data.selected_answer != data.correct_answer && data.correct_answer === key) {
-                    writeAnswers(key, value, "correct-answer");
-                }
-                else if (data.selected_answer === data.correct_answer && data.selected_answer === key) {
-                    writeAnswers(key, value, "correct-answer");
-                }
-                else {
-                    writeAnswers(key, value, "");
-                }
+                const buttonStyle = key === data.correct_answer
+                    ? "correct-answer"
+                    : key === data.selected_answer
+                        ? "wrong-answer"
+                        : "";
+                App.renderAnswers(answerRow, { [key]: value }, buttonStyle);
             })
 
             if (data.selected_answer === data.correct_answer) {
@@ -83,38 +61,8 @@
             }
         }
 
-        function writeAnswers(button, answer, button_style) {
-            answerRow.innerHTML += `<button class="${button_style}">${button}: ${answer}</button>`;
-        }
-
         function writeDescription(desc) {
             document.getElementById("description").textContent = desc;
-        }
-
-        function setMedia(media) {
-            const mediaElement = document.getElementById("media");
-            const mediaName = typeof media === "string" ? media.trim() : "";
-            const mediaPath = encodeURIComponent(mediaName);
-
-            if (!mediaName) {
-                mediaElement.innerHTML = `<img width="480" height="270" src=../static/no-media.jpg>`;
-                return;
-            }
-
-            if (mediaName.toLowerCase().endsWith(".wmv"))
-            {
-                mediaElement.innerHTML = `
-                <video width="480" height="270" controls>
-                    <source src="/resources/media/${mediaPath.replace(/\.wmv$/i, ".mp4")}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>`;
-            }   
-            else if (/\.(jpg|jpeg|png|gif|webp)$/i.test(mediaName)) {
-                mediaElement.innerHTML = `<img width="480" height="270" src="../resources/media/${mediaPath}">`;
-            }
-            else {
-                mediaElement.innerHTML = `<img width="480" height="270" src="../static/no-media.jpeg">`;
-            }
         }
 
         setValues();

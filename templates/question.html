@@ -15,10 +15,11 @@
         <button id="submit">Kontynuuj [ENTER]</button>
     </div>
 
+    <script>window.APP_CONFIG = { apiUrl: "{{ api_url }}" };</script>
+    <script src="../static/app.js"></script>
     <script>
         let selected_answer = "";
         let question_id = 0;
-        const API_URL = "{{ api_url }}";    
         const answerRow = document.getElementById("b-row");
 
         answerRow.addEventListener("click", (event) => {
@@ -41,7 +42,7 @@
 
         document.getElementById("submit").addEventListener("click", async () => {
             try {
-                await makeRequest("POST", "/question/submit-answer", { id: question_id, answer: selected_answer });
+                await App.makeRequest("POST", "/question/submit-answer", { id: question_id, answer: selected_answer });
             } catch (e) {
                 console.error("Failed to submit answer", e);
                 return;
@@ -50,51 +51,24 @@
             window.location.href = '/question';
         });
 
-        async function makeRequest(method, endpoint, body = null) {
-            const options = {
-                method: method,
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            };
-            if (body) options.body = JSON.stringify(body);
-            
-            const response = await fetch(API_URL + endpoint, options);
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(`${response.status}: ${data.detail || response.statusText}`);
-            }
-            return data;
-        }
-
         async function getNextQuestion() {
             try {
-                const data = await makeRequest("GET", "/question/get");
+                const data = await App.makeRequest("GET", "/question/get");
 
                 if (data === null) {
                     window.location.href = "/results";
                     return;
                 }
 
-                if (data.special) {
-                    document.getElementById("generic-desc").innerHTML = `
-                    <p>Zakres: Specjalistyczny, Punkty: ${data.points}</p>
-                    `
-                }
-                else {
-                    document.getElementById("generic-desc").innerHTML = `
-                    <p>Zakres: Podstawowy, Punkty: ${data.points}</p>
-                    `
-                }
+                document.getElementById("generic-desc").textContent =
+                    `Zakres: ${data.special ? "Specjalistyczny" : "Podstawowy"}, Punkty: ${data.points}`;
                 
                 writeDescription(data.description);
-                setMedia(data.media);
+                App.setMedia(data.media);
                 answerRow.innerHTML = "";
                 selected_answer = "";
 
-                Object.entries(data.answers).forEach(([key, value]) => {
-                    writeAnswers(key, value);
-                })
+                App.renderAnswers(answerRow, data.answers, "answer-button");
                 
                 question_id = data.id;
                 return;
@@ -105,36 +79,6 @@
 
         function writeDescription(desc) {
             document.getElementById("question-desc").textContent = desc;
-        }
-
-        function setMedia(media) {
-            const mediaElement = document.getElementById("media");
-            const mediaName = typeof media === "string" ? media.trim() : "";
-            const mediaPath = encodeURIComponent(mediaName);
-
-            if (!mediaName) {
-                mediaElement.innerHTML = `<img width="480" height="270" src=../static/no-media.jpg>`;
-                return;
-            }
-
-            if (mediaName.toLowerCase().endsWith(".wmv"))
-            {
-                mediaElement.innerHTML = `
-                <video width="480" height="270" controls>
-                    <source src="/resources/media/${mediaPath.replace(/\.wmv$/i, ".mp4")}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>`;
-            }   
-            else if (/\.(jpg|jpeg|png|gif|webp)$/i.test(mediaName)) {
-                mediaElement.innerHTML = `<img width="480" height="270" src="../resources/media/${mediaPath}">`;
-            }
-            else {
-                mediaElement.innerHTML = `<img width="480" height="270" src="../static/no-media.jpeg">`;
-            }
-        }
-
-        function writeAnswers(button, answer) {
-            answerRow.innerHTML += `<button class="answer-button" data-answer="${button}">${button}: ${answer}</button>`;
         }
 
         document.addEventListener("keydown", (event) => {
