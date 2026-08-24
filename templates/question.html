@@ -25,12 +25,19 @@
             const clickedButton = event.target.closest(".answer-button");
             if (!clickedButton) return;
 
+            selectAnswer(clickedButton.dataset.answer);
+        });
+
+        function selectAnswer(answerKey) {
+            const selectedButton = answerRow.querySelector(`[data-answer="${answerKey}"]`);
+            if (!selectedButton) return;
+
             answerRow.querySelectorAll(".answer-button").forEach((button) => {
                 button.classList.remove("selected");
             });
-            clickedButton.classList.add("selected");
-            selected_answer = clickedButton.dataset.answer;
-        });
+            selectedButton.classList.add("selected");
+            selected_answer = answerKey;
+        }
 
         document.getElementById("submit").addEventListener("click", async () => {
             try {
@@ -133,6 +140,12 @@
         document.addEventListener("keydown", (event) => {
             if (event.key === "Enter") {
                 document.getElementById("submit").click();
+                return;
+            }
+
+            const answerKey = event.key.toUpperCase();
+            if (["A", "B", "C", "T", "N"].includes(answerKey)) {
+                selectAnswer(answerKey);
             }
         });
 
