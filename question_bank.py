@@ -44,7 +44,7 @@ def generic_amount_question(bank: list[Question], special: bool, points: int, nu
     return output
 
 
-def parse_row_to_question(row: pd.Series):
+def parse_row_to_question(row: pd.Series) -> Question:
     answer_dict = {}
     media = None if pd.isna(row["Media"]) else str(row["Media"])
 

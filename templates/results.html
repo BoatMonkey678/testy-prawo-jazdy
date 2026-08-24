@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testy Prawo Jazdy</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Wyniki</h1>
+        <p id="total-score"></p>
+        <p>Pytania podstawowe</p>
+        <div id="scoreboard-normal"></div>
+        <p>Pytania specjalistyczne</p>
+        <div id="scoreboard-special"></div>
+        
+        <div class="section">
+            <button onclick="window.location.href='/'">Ekran Startowy</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "{{ api_url }}";
+
+        async function makeRequest(method, endpoint, body = null) {
+            const options = {
+                method: method,
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            };
+            if (body) options.body = JSON.stringify(body);
+            
+            const response = await fetch(API_URL + endpoint, options);
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(`${response.status}: ${data.detail || response.statusText}`);
+            }
+            return data;
+        }
+
+        async function setValues() {
+            const data = await makeRequest("GET", "/results/get")
+
+            document.getElementById("total-score").textContent = `${data.points}/74 punkty`;
+
+            let non_special_index = 1
+            let special_index = 1
+
+            data.questions.forEach((element, index) => {
+                if (element.selected_answer === element.correct_answer) {
+                    if (element.special) {
+                        addQuestionButton("scoreboard-special", "correct-answer", special_index, element);
+                        special_index += 1;
+                    }
+                    else {
+                        addQuestionButton("scoreboard-normal", "correct-answer", non_special_index, element);
+                        non_special_index += 1;
+                    }
+                }
+                else {
+                    if (element.special) {
+                        addQuestionButton("scoreboard-special", "wrong-answer", special_index, element);
+                        special_index += 1;
+                    }
+                    else {
+                        addQuestionButton("scoreboard-normal", "wrong-answer", non_special_index, element);
+                        non_special_index += 1;
+                    }
+                }
+            });
+        }
+
+        function addQuestionButton(containerId, className, number, element) {
+            const button = document.createElement("button");
+            button.className = className;
+            button.textContent = number;
+            button.addEventListener("click", () => {
+                sessionStorage.setItem("result-question", JSON.stringify(element));
+                window.location.href = "/results/details";
+            });
+            document.getElementById(containerId).appendChild(button);
+        }
+
+        setValues();
+    </script>
+</body>
+</html>

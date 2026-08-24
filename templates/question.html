@@ -8,12 +8,11 @@
 </head>
 <body>
     <div class="container">
+        <div id="generic-desc"></div>
         <div id="media"></div>
         <p id="question-desc"></p>
-        <div id="button-a"></div>
-        <div id="b-row" class="button-row">
-        </div>
-        <button id="submit">Kontynuuj</button>
+        <div id="b-row" class="button-row"></div>
+        <button id="submit">Kontynuuj [ENTER]</button>
     </div>
 
     <script>
@@ -66,8 +65,19 @@
                 const data = await makeRequest("GET", "/question/get");
 
                 if (data === null) {
-                    window.location.href = "/";
+                    window.location.href = "/results";
                     return;
+                }
+
+                if (data.special) {
+                    document.getElementById("generic-desc").innerHTML = `
+                    <p>Zakres: Specjalistyczny, Punkty: ${data.points}</p>
+                    `
+                }
+                else {
+                    document.getElementById("generic-desc").innerHTML = `
+                    <p>Zakres: Podstawowy, Punkty: ${data.points}</p>
+                    `
                 }
                 
                 writeDescription(data.description);
@@ -119,6 +129,12 @@
         function writeAnswers(button, answer) {
             answerRow.innerHTML += `<button class="answer-button" data-answer="${button}">${button}: ${answer}</button>`;
         }
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                document.getElementById("submit").click();
+            }
+        });
 
         getNextQuestion();
     </script>

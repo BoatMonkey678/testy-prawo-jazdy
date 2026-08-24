@@ -37,11 +37,25 @@ button:hover {
     background-color: #0056b3;
 }
 .answer-button.selected {
-    background-color: #28a745;
+    background-color: #6C5CE7;
 }
 
 .answer-button.selected:hover {
+    background-color: #A29BFE;
+}
+button.correct-answer {
+    background-color: #28a745;
+}
+
+button.correct-answer:hover {
     background-color: #218838;
+}
+button.wrong-answer {
+    background-color: #dc3545;
+}
+
+button.wrong-answer:hover {
+    background-color: #a12431;
 }
 .result {
     background-color: #f9f9f9;

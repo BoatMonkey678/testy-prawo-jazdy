@@ -115,7 +115,7 @@ def extract_archive(file: Path, out_dir: str):
 
         print(f"\nExtracted {file}")
 
-def convert_wmv_file(wmv_file):
+def convert_wmv_file(wmv_file: Path) -> None:
     mp4_file = wmv_file.with_suffix(".mp4")
 
     subprocess.run([
@@ -132,7 +132,13 @@ def convert_wmv_file(wmv_file):
     wmv_file.unlink()
 
 
-def convert_wmv_directory(directory, workers=4):
+def convert_wmv_directory(directory: Path, workers: int) -> None:
+    actual_workers = workers
+    
+    if workers < 1:
+        actual_workers = 4
+
+    
     directory = Path(directory)
     wmv_files = list(directory.glob("*.wmv"))
     total = len(wmv_files)
@@ -144,7 +150,7 @@ def convert_wmv_directory(directory, workers=4):
 
     completed = 0
 
-    with ThreadPoolExecutor(max_workers=workers) as executor:
+    with ThreadPoolExecutor(max_workers=actual_workers) as executor:
         futures = {
             executor.submit(convert_wmv_file, wmv_file): wmv_file
             for wmv_file in wmv_files
