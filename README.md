@@ -1,4 +1,10 @@
-## Initial Run
+# Driver License Tests
+Python app for running Polish driver license theory tests.
+
+## Running the app
+- Run the exe and open the port it says in the terminal in your browser
+
+## First Run
 - The initial run takes a long time, because the app has to download the media archives with videos/photos, unzip them and convert the videos to a HTML-useable format
 
 ## Requirements

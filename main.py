@@ -20,6 +20,18 @@ server_port = config.getint("server", "port")
 converting_threads = config.getint("system_resources", "conversion_threads")
 api_url = f"http://{server_host}:{server_port}"
 
+download_if_not_present("https://www.gov.pl/attachment/a5c6c329-28a5-4274-a1a8-e2813f0a51bd", "./resources/data.xlsx")
+
+if not os.path.exists("./resources/media"):
+    download_if_not_present("https://www.gov.pl/pliki/mi/multimedia_do_pytan.zip", "./resources/multimedia-1.zip")
+    download_if_not_present("https://www.gov.pl/attachment/10d143bf-9e93-4d82-935d-48c89353d3ce", "./resources/multimedia-2.zip")
+    extract_archive(Path("./resources/multimedia-1.zip"), "./resources/media")
+    extract_archive(Path("./resources/multimedia-2.zip"), "./resources/media")
+    os.remove("./resources/multimedia-1.zip")
+    os.remove("./resources/multimedia-2.zip")
+
+convert_wmv_directory("./resources/media", converting_threads)
+
 app = FastAPI(
     docs_url=None if IS_FROZEN else "/docs",
     redoc_url=None if IS_FROZEN else "/redoc",
@@ -119,18 +131,6 @@ async def submit_answer(result: ReturnedAnswer):
     return {"answered": answered_questions}
 
 if __name__ == "__main__":
-    download_if_not_present("https://www.gov.pl/attachment/a5c6c329-28a5-4274-a1a8-e2813f0a51bd", "./resources/data.xlsx")
-
-    if not os.path.exists("./resources/media"):
-        download_if_not_present("https://www.gov.pl/pliki/mi/multimedia_do_pytan.zip", "./resources/multimedia-1.zip")
-        download_if_not_present("https://www.gov.pl/attachment/10d143bf-9e93-4d82-935d-48c89353d3ce", "./resources/multimedia-2.zip")
-        extract_archive(Path("./resources/multimedia-1.zip"), "./resources/media")
-        extract_archive(Path("./resources/multimedia-2.zip"), "./resources/media")
-        os.remove("./resources/multimedia-1.zip")
-        os.remove("./resources/multimedia-2.zip")
-
-    convert_wmv_directory("./resources/media", converting_threads)
-
     uvicorn.run(
         app,
         host=server_host,
